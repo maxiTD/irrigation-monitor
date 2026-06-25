@@ -114,7 +114,7 @@ Si no hay agua al momento de ejecutar, el ESP32 no riega, reporta `hay_agua: fal
 
 - **Liveness**: estampar la hora de cada `POST /estado` recibido (`ultima_conexion`). La web marca "desconectado" si pasó más de ~2× el intervalo de polling. Requiere que el ESP32 postee estado periódicamente (heartbeat, ej. cada 5 min) aunque no haya regado ni cambiado nada.
 - **Alerta de agua**: disparar el WhatsApp una sola vez en la transición de `hay_agua` de `true` a `false`. No reenviar mientras siga en `false` (debounce del lado del backend).
-- **Seguridad**: si se expone a internet, exigir un token en cada request.
+- **Seguridad**: la API es abierta (sin autenticación).
 
 ---
 

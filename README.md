@@ -12,7 +12,7 @@ Ver `PLAN.md` para el plan de ejecución por fases.
 ## Arranque
 
 ```bash
-cp .env.example .env      # completar si hace falta (CallMeBot, token)
+cp .env.example .env      # completar si hace falta (CallMeBot)
 npm install
 npm run dev               # o: npm start
 ```
@@ -34,8 +34,9 @@ La base SQLite se crea sola en `data/riego.db` con 2 macetas y `version=1`.
 
 - `PORT` — puerto (default 3000).
 - `POLLING_SEG` — intervalo de polling del ESP32; el umbral de "desconectado" en la web es 2× este valor.
-- `API_TOKEN` — si está vacío, la API queda abierta (modo LAN). Si se completa, se exige `Authorization: Bearer <token>` en `/api/*`.
 - `CALLMEBOT_PHONE` / `CALLMEBOT_APIKEY` — para la alerta de WhatsApp. Si faltan, la alerta se loguea pero no se envía.
+
+La API es abierta (sin autenticación).
 
 ## Estado de verificación
 

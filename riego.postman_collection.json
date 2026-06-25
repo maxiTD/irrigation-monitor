@@ -1,18 +1,13 @@
 {
   "info": {
     "name": "Riego ESP32 — API",
-    "description": "Pruebas de la API de riego (backend + web + ESP32).\n\nVariables de colección:\n- base_url: http://localhost:3000\n- api_token: dejar vacío en modo LAN. Si el backend tiene API_TOKEN, completarlo.\n- now: epoch en segundos (lo setea el script de Pre-request de cada POST /estado).\n\nLos requests del ESP32 mandan Authorization: Bearer {{api_token}} (ignorado si está vacío).",
+    "description": "Pruebas de la API de riego (backend + web + ESP32).\n\nVariables de colección:\n- base_url: http://localhost:3000\n- now: epoch en segundos (lo setea el script de Pre-request de cada POST /estado).\n\nLa API es abierta (sin autenticación).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "base_url", "value": "http://localhost:3000" },
-    { "key": "api_token", "value": "" },
     { "key": "now", "value": "" }
   ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{api_token}}", "type": "string" }]
-  },
   "item": [
     {
       "name": "Config",

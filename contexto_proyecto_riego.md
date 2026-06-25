@@ -26,18 +26,18 @@ El firmware del ESP32 lo desarrolla el dueño del proyecto por separado. Este re
 
 ### Decisión clave: lógica de riego en el borde
 
-El ESP32 es la autoridad sobre *cuándo* riega. El backend solo persiste parámetros y estado. Si se cae internet o el servidor, las plantas igual se riegan con la última config que el ESP32 tenía. La web cambia parámetros; no comanda riegos.
+El ESP32 es la autoridad sobre _cuándo_ riega. El backend solo persiste parámetros y estado. Si se cae internet o el servidor, las plantas igual se riegan con la última config que el ESP32 tenía. La web cambia parámetros; no comanda riegos.
 
 ## Stack
 
-| Pieza | Elección | Estado |
-|---|---|---|
-| Backend | Node.js (Express o similar) | Definido |
-| Base de datos | SQLite (un archivo; sobra para 2 macetas) | Propuesto |
-| Front web | HTML/JS mínimo: vista de estado + formulario de config | Propuesto |
-| Notificaciones | WhatsApp vía CallMeBot (gateway gratuito) | Definido |
-| Comunicación ESP32 ↔ backend | HTTP polling | Definido |
-| Hosting | Casa (Raspberry/PC en LAN) o free tier (Railway/Render/Fly.io) | A definir |
+| Pieza                        | Elección                                               | Estado   |
+| ---------------------------- | ------------------------------------------------------ | -------- |
+| Backend                      | Node.js (Express o similar)                            | Definido |
+| Base de datos                | SQLite (un archivo; sobra para 2 macetas)              | Definido |
+| Front web                    | HTML/JS mínimo: vista de estado + formulario de config | Definido |
+| Notificaciones               | WhatsApp vía CallMeBot (gateway gratuito)              | Definido |
+| Comunicación ESP32 ↔ backend | HTTP polling                                           | Definido |
+| Hosting                      | Fly.io                                                 | Definido |
 
 ## Modelo de comunicación
 
@@ -79,6 +79,5 @@ Detalle completo en `contratos_riego_esp32.md`.
 - **Cómo se mide `hay_agua`** (sensor de nivel, flotante, etc.). Es firmware y no toca el contrato — para la API sigue siendo un bool — pero hay que decidirlo.
 - **Intervalo de polling concreto** (ej. cada 5 min) y, en consecuencia, el **umbral de "desconectado"** que usa la web.
 - **Setup de CallMeBot**: activar la API key una vez (agregar el número del bot a contactos y mandarle "I allow callmebot to send me messages" por WhatsApp), definir el número que recibe la alerta, y guardar la API key en el backend.
-- **Esquema de auth/token** entre ESP32 y backend si se expone a internet, y dónde guarda el ESP32 ese token.
 - **Hosting**: casa (LAN) vs cloud. Afecta si la web es accesible desde afuera y si hace falta exponer la API.
 - **Zona horaria** para mostrar en la web (el almacenamiento es epoch/UTC; la presentación va en hora local).

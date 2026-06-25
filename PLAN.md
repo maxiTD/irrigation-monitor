@@ -6,7 +6,7 @@ Plan para implementar **backend + web + notificaciones**. El firmware del ESP32 
 
 | Decisión | Elección | Implicancia |
 |---|---|---|
-| Hosting | Casa / LAN (Raspberry o PC) | Web y API solo accesibles en la red local. Sin token al arranque. |
+| Hosting | Casa / LAN (Raspberry o PC) | Web y API solo accesibles en la red local. |
 | Estructura | Monorepo simple | `/backend` (Express) sirve también los estáticos de `/public`. Un solo proceso, un solo deploy. |
 | Backend | Node.js + Express | Definido. |
 | DB | SQLite (`better-sqlite3`) | Un archivo. Síncrono, simple, sobra para 2 macetas. |
@@ -14,7 +14,7 @@ Plan para implementar **backend + web + notificaciones**. El firmware del ESP32 
 | Notificación | WhatsApp vía CallMeBot | GET HTTP a la API. API key en `.env`. |
 | Comunicación ESP32 | HTTP polling | El ESP32 postea estado cada ~5 min y baja config solo si cambió `version`. |
 
-El token entre ESP32 y backend queda preparado pero **opcional**: si `API_TOKEN` está vacío en `.env`, no se exige. Esto deja la puerta abierta a mover a cloud sin reescribir nada.
+La API es abierta (sin autenticación).
 
 ## Estructura del proyecto
 
@@ -74,15 +74,13 @@ estado_sistema(id=1, hay_agua, ultima_conexion)
 
 ### Fase 5 — Robustez y despliegue
 11. Validación de payloads (rangos de intervalo/cantidad_ml, ids válidos).
-12. Activar `API_TOKEN` si en algún momento se expone fuera de la LAN.
-13. Correr como servicio (systemd en Raspberry / `pm2`) para que levante al bootear.
+12. Correr como servicio (systemd en Raspberry / `pm2`) para que levante al bootear.
 
 ## Pendientes a resolver (del contexto, no rompen el modelo)
 
 - **Intervalo de polling concreto** (propuesta: 5 min) → fija el umbral de "desconectado" (~10 min) en la web.
 - **Cómo se mide `hay_agua`** (sensor de nivel/flotante) → es firmware, la API lo ve como bool.
 - **Zona horaria** de presentación en la web (almacenamiento en epoch/UTC).
-- **Auth/token** solo si más adelante se expone a internet.
 - Más adelante: idempotencia del "regar ahora" (cmd_id) para no regar dos veces si se pierde la confirmación del ESP32.
 
 ## Próximos pasos sugeridos

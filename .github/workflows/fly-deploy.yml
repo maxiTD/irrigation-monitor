@@ -17,6 +17,5 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           POLLING_SEG: ${{ secrets.POLLING_SEG }}
-          API_TOKEN: ${{secrets.API_TOKEN}}
           CALLMEBOT_PHONE: ${{secrets.CALLMEBOT_PHONE}}
           CALLMEBOT_APIKEY: ${{secrets.CALLMEBOT_APIKEY}}
