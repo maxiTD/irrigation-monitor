@@ -23,6 +23,7 @@ app.use('/api', regarRoutes);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-app.listen(PORT, () => {
-  console.log(`[server] Sistema de riego escuchando en http://localhost:${PORT}`);
+const HOST = '0.0.0.0'; // escuchar en todas las interfaces (requerido por Fly/contenedores)
+app.listen(PORT, HOST, () => {
+  console.log(`[server] Sistema de riego escuchando en ${HOST}:${PORT}`);
 });
