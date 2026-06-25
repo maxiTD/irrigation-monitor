@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "Riego ESP32 — API",
+    "description": "Pruebas de la API de riego (backend + web + ESP32).\n\nVariables de colección:\n- base_url: http://localhost:3000\n- api_token: dejar vacío en modo LAN. Si el backend tiene API_TOKEN, completarlo.\n- now: epoch en segundos (lo setea el script de Pre-request de cada POST /estado).\n\nLos requests del ESP32 mandan Authorization: Bearer {{api_token}} (ignorado si está vacío).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "api_token", "value": "" },
+    { "key": "now", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{api_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Config",
+      "item": [
+        {
+          "name": "GET /api/config — bajar config (ESP32 / web)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "config"]
+            },
+            "description": "Devuelve { version, macetas:[{ id, habilitada, intervalo_horas, cantidad_ml, ultimo_riego }] }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('tiene version numérica', () => pm.expect(b.version).to.be.a('number'));",
+                  "pm.test('tiene array de macetas', () => pm.expect(b.macetas).to.be.an('array'));",
+                  "pm.collectionVariables.set('config_version', b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/config — editar config (web)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"macetas\": [\n    { \"id\": 1, \"habilitada\": true, \"intervalo_horas\": 24, \"cantidad_ml\": 200 },\n    { \"id\": 2, \"habilitada\": true, \"intervalo_horas\": 48, \"cantidad_ml\": 300 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "config"]
+            },
+            "description": "La web manda el array de macetas SIN version ni ultimo_riego. El backend incrementa version y responde { ok, version }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));",
+                  "pm.test('devuelve version', () => pm.expect(b.version).to.be.a('number'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/config — payload inválido (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"macetas\": [\n    { \"id\": 1, \"habilitada\": true, \"intervalo_horas\": 0, \"cantidad_ml\": 200 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "config"]
+            },
+            "description": "intervalo_horas=0 es inválido. El backend debe responder 400 con { ok:false, error }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok false', () => pm.expect(b.ok).to.eql(false));",
+                  "pm.test('trae error', () => pm.expect(b.error).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Riego manual",
+      "item": [
+        {
+          "name": "POST /api/regar — regar ahora",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/regar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "regar"]
+            },
+            "description": "Setea riego_manual=true en la maceta. El ESP32 lo ejecuta en su próximo poll con la cantidad_ml configurada. No toca version. Verificá con GET /api/config que aparezca riego_manual:true."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));",
+                  "pm.test('riego_manual true', () => pm.expect(b.riego_manual).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/regar — cancelar riego manual",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"cancelar\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/regar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "regar"]
+            },
+            "description": "Cancela un riego manual pendiente (riego_manual=false)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));",
+                  "pm.test('riego_manual false', () => pm.expect(b.riego_manual).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/regar — maceta inexistente (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/regar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "regar"]
+            },
+            "description": "id de maceta inexistente -> 400 con { ok:false, error }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok false', () => pm.expect(b.ok).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Estado",
+      "item": [
+        {
+          "name": "POST /api/estado — reporte ESP32 (hay agua)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": true,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}} },\n    { \"id\": 2, \"ultimo_riego\": {{now}} }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estado"]
+            },
+            "description": "Heartbeat + reporte. Persiste ultimo_riego y estampa ultima_conexion. Responde { ok, version }. El ESP32 compara version y baja config solo si cambió."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('now', Math.floor(Date.now()/1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));",
+                  "pm.test('devuelve version', () => pm.expect(b.version).to.be.a('number'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/estado — SIN agua (dispara alerta WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": false,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}} },\n    { \"id\": 2, \"ultimo_riego\": {{now}} }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estado"]
+            },
+            "description": "Si el estado previo era hay_agua=true, esta transición a false dispara la alerta de WhatsApp UNA sola vez (debounce). Correr primero el request 'hay agua' para ver la transición."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('now', Math.floor(Date.now()/1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/estado — estado para la web (liveness)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "estado"]
+            },
+            "description": "Devuelve { hay_agua, ultima_conexion, conectado, polling_seg, version, macetas }. 'conectado' es true si el último reporte fue hace <= 2x polling_seg."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('trae flag conectado', () => pm.expect(b.conectado).to.be.a('boolean'));",
+                  "pm.test('trae hay_agua', () => pm.expect(b.hay_agua).to.be.a('boolean'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notificación",
+      "item": [
+        {
+          "name": "GET /api/notificacion — destinatario actual",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/notificacion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notificacion"]
+            },
+            "description": "Devuelve { phone, apikey } del destinatario de la alerta de WhatsApp (CallMeBot)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('trae phone', () => pm.expect(b).to.have.property('phone'));",
+                  "pm.test('trae apikey', () => pm.expect(b).to.have.property('apikey'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/notificacion — editar destinatario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"5491155551234\",\n  \"apikey\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/notificacion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notificacion"]
+            },
+            "description": "Edita el destinatario. phone: formato internacional, solo dígitos (8 a 15), sin \"+\" ni espacios. apikey: la key de CallMeBot del número receptor. phone vacío desactiva la alerta."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok true', () => pm.expect(b.ok).to.eql(true));",
+                  "pm.test('refleja phone', () => pm.expect(b.phone).to.eql('5491155551234'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/notificacion — teléfono inválido (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"12-34 abc\",\n  \"apikey\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/notificacion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notificacion"]
+            },
+            "description": "Teléfono con caracteres no numéricos. El backend debe responder 400 con { ok:false, error }."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "const b = pm.response.json();",
+                  "pm.test('ok false', () => pm.expect(b.ok).to.eql(false));",
+                  "pm.test('trae error', () => pm.expect(b.error).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

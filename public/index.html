@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor de Riego · Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.5C12 2.5 5 10 5 15a7 7 0 0 0 14 0c0-5-7-12.5-7-12.5Z"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Monitor de Riego</h1>
+          <span class="brand-sub">Panel de control · 2 macetas</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="sys-status">
+          <span id="badge-conexion" class="chip" data-state="idle">
+            <span class="dot"></span><span class="chip-label">—</span>
+          </span>
+          <span id="badge-agua" class="chip" data-state="idle">
+            <span class="dot"></span><span class="chip-label">—</span>
+          </span>
+          <span id="ultima-conexion" class="last-seen"></span>
+        </div>
+        <div class="header-actions">
+          <span id="msg" class="msg"></span>
+
+          <div class="notif">
+            <button type="button" id="btn-notif" class="btn-icon" aria-label="Configurar alerta" aria-expanded="false" title="Alerta de WhatsApp">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a1.94 1.94 0 0 1-3.4 0"/></svg>
+            </button>
+            <div id="notif-panel" class="notif-panel" hidden>
+              <div class="notif-head">
+                <h3>Alerta de WhatsApp</h3>
+                <p class="notif-hint">A quién se le avisa cuando hay que reponer agua.</p>
+              </div>
+              <label for="notif-phone">Teléfono</label>
+              <input id="notif-phone" type="text" inputmode="numeric" autocomplete="off" placeholder="5491112345678" />
+              <span class="field-hint">Formato internacional, solo dígitos, sin “+” ni espacios.</span>
+              <label for="notif-apikey">API key de CallMeBot</label>
+              <input id="notif-apikey" type="text" autocomplete="off" placeholder="123456" />
+              <span class="field-hint">Cada número receptor tiene su propia key.</span>
+              <div class="notif-actions">
+                <span id="notif-msg" class="msg"></span>
+                <button type="button" id="btn-notif-save" class="btn-primary">Guardar</button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" form="form-config" id="btn-guardar" class="btn-primary" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 6.5"/></svg>
+            Guardar
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <form id="form-config">
+        <section id="macetas" class="grid"><!-- render dinámico --></section>
+      </form>
+    </main>
+
+    <footer class="appfoot">
+      <span id="version">—</span> · refresco cada <span id="refresh-seg">—</span>s
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
