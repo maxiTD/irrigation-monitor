@@ -1,6 +1,6 @@
 'use strict';
 
-const REFRESH_MS = 10000; // refresco de la vista de estado
+const REFRESH_MS = 5000; // refresco de la vista de estado
 let editando = false; // si hay cambios sin guardar, no pisamos lo que el usuario editó
 let primeraCarga = true;
 let baseline = null; // snapshot de la config tal como vino del server (para detectar cambios)
@@ -61,17 +61,21 @@ const LABEL_HUMEDAD = {
   na: 'Humedad',
 };
 
+const humedadPrev = {}; // último % renderizado por maceta, para animar solo el cambio
+
 function humedadHTML(m) {
   const h = m.humedad;
   const nivel = nivelHumedad(h);
   const pct = h == null ? 0 : Math.max(0, Math.min(100, Math.round(h)));
+  const prev = humedadPrev[m.id] ?? 0; // arranca en el valor anterior y transiciona al nuevo
+  humedadPrev[m.id] = pct;
   return `
     <div class="humedad" data-nivel="${nivel}">
       <div class="humedad-top">
         <span class="humedad-label">${LABEL_HUMEDAD[nivel]}</span>
         <span class="humedad-val">${h == null ? 'sin dato' : pct + '%'}</span>
       </div>
-      <div class="humedad-bar"><span style="width: ${pct}%"></span></div>
+      <div class="humedad-bar"><span data-hpct="${pct}" style="width: ${prev}%"></span></div>
     </div>
   `;
 }
@@ -179,6 +183,14 @@ function renderMacetas(macetas) {
   }
   baseline = JSON.stringify(snapshotForm()); // snapshot limpio recién renderizado
   actualizarCambios(); // deja el botón deshabilitado (sin cambios)
+
+  // Animar las barras de humedad del valor anterior al nuevo (transición CSS).
+  // Doble rAF para asegurar que el ancho inicial ya se pintó antes de cambiarlo.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cont.querySelectorAll('.humedad-bar span').forEach((s) => {
+      s.style.width = s.dataset.hpct + '%';
+    });
+  }));
 }
 
 // Pide (o cancela) un riego manual. El ESP32 lo ejecuta en su próximo poll.
