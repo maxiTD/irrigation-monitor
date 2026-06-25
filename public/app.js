@@ -1,6 +1,6 @@
 'use strict';
 
-const REFRESH_MS = 15000; // refresco de la vista de estado
+const REFRESH_MS = 10000; // refresco de la vista de estado
 let editando = false; // si hay cambios sin guardar, no pisamos lo que el usuario editó
 let primeraCarga = true;
 let baseline = null; // snapshot de la config tal como vino del server (para detectar cambios)
@@ -124,9 +124,9 @@ function cardHTML(m) {
 
     <div class="card-action">
       ${m.riego_manual
-        ? `<span class="pend"><span class="spinner"></span>Riego manual pendiente…</span>
+      ? `<span class="pend"><span class="spinner"></span>Riego manual pendiente…</span>
            <button type="button" class="btn-ghost" data-cancel="${m.id}">Cancelar</button>`
-        : `<button type="button" class="btn-regar" data-regar="${m.id}">${ICONS.drop} Regar ahora (${m.cantidad_ml} ml)</button>`}
+      : `<button type="button" class="btn-regar" data-regar="${m.id}">${ICONS.drop} Regar ahora (${m.cantidad_ml} ml)</button>`}
     </div>
   `;
 }
