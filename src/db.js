@@ -15,8 +15,8 @@ function load() {
   return {
     version: 1,
     macetas: [
-      { id: 1, habilitada: true, intervalo_horas: 24, cantidad_ml: 200, ultimo_riego: null, riego_manual: false },
-      { id: 2, habilitada: true, intervalo_horas: 48, cantidad_ml: 300, ultimo_riego: null, riego_manual: false },
+      { id: 1, habilitada: true, intervalo_horas: 24, cantidad_ml: 200, ultimo_riego: null, riego_manual: false, humedad: null },
+      { id: 2, habilitada: true, intervalo_horas: 48, cantidad_ml: 300, ultimo_riego: null, riego_manual: false, humedad: null },
     ],
     estado_sistema: { hay_agua: true, ultima_conexion: null },
     notificacion: {
@@ -62,6 +62,16 @@ for (const m of store.macetas) {
 }
 if (migradoManual) persist();
 
+// Migración: asegurar el campo de humedad (0-100, null si nunca reportó).
+let migradoHumedad = false;
+for (const m of store.macetas) {
+  if (m.humedad === undefined) {
+    m.humedad = null;
+    migradoHumedad = true;
+  }
+}
+if (migradoHumedad) persist();
+
 function getVersion() {
   return store.version;
 }
@@ -91,6 +101,14 @@ const updateUltimoRiego = {
   run(ultimo_riego, id) {
     const m = store.macetas.find((x) => x.id === id);
     if (m) m.ultimo_riego = ultimo_riego;
+  },
+};
+
+// Humedad reportada por el ESP32 (0-100, % de cuán óptima está la maceta).
+const updateHumedad = {
+  run(humedad, id) {
+    const m = store.macetas.find((x) => x.id === id);
+    if (m) m.humedad = humedad;
   },
 };
 
@@ -141,6 +159,7 @@ module.exports = {
   getMacetas,
   updateMacetaConfig,
   updateUltimoRiego,
+  updateHumedad,
   setRiegoManual,
   getEstadoSistema,
   setEstadoSistema,

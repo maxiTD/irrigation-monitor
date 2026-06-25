@@ -216,6 +216,27 @@ body {
 .card-info svg { color: var(--cyan); flex: none; }
 .card-info b { color: var(--text); font-weight: 550; }
 
+/* humedad */
+.humedad { margin-bottom: 1rem; }
+.humedad-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .4rem; }
+.humedad-label { font-size: .8rem; color: var(--muted); }
+.humedad-val { font-size: .85rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.humedad-bar {
+  height: 7px; border-radius: 999px; background: #0c1219;
+  border: 1px solid var(--line-soft); overflow: hidden;
+}
+.humedad-bar span {
+  display: block; height: 100%; border-radius: 999px;
+  transition: width .4s ease;
+}
+.humedad[data-nivel="ok"]   .humedad-val { color: var(--accent); }
+.humedad[data-nivel="ok"]   .humedad-bar span { background: var(--accent); }
+.humedad[data-nivel="warn"] .humedad-val { color: var(--warn); }
+.humedad[data-nivel="warn"] .humedad-bar span { background: var(--warn); }
+.humedad[data-nivel="bad"]  .humedad-val { color: var(--danger); }
+.humedad[data-nivel="bad"]  .humedad-bar span { background: var(--danger); }
+.humedad[data-nivel="na"]   .humedad-val { color: var(--faint); }
+
 /* fields */
 .fields { display: grid; gap: .7rem; }
 .field { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }

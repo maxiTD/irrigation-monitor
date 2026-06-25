@@ -31,11 +31,13 @@ Documento de referencia para implementar backend y firmware con el mismo contrat
   "config_version": 7,
   "hay_agua": true,
   "macetas": [
-    { "id": 1, "ultimo_riego": 1718294400 },
-    { "id": 2, "ultimo_riego": 1718208000 }
+    { "id": 1, "ultimo_riego": 1718294400, "humedad": 72 },
+    { "id": 2, "ultimo_riego": 1718208000, "humedad": 45 }
   ]
 }
 ```
+
+`humedad` es un entero/número **0–100** que representa qué tan óptima está la humedad de la maceta (100 = óptima). Es opcional por maceta; si no se manda, el backend deja el último valor. El backend valida el rango y rechaza con 400 si está fuera de 0–100.
 
 Respuesta del backend:
 
@@ -86,6 +88,7 @@ Si no hay agua al momento de ejecutar, el ESP32 no riega, reporta `hay_agua: fal
 | `version` | Backend | ESP32 | sube en cada edición; gatilla el `GET /config` |
 | `ultimo_riego` | ESP32 | ESP32, Web | el ESP32 es la autoridad en operación; el backend lo persiste y lo devuelve para el boot |
 | `hay_agua` | ESP32 | Backend, Web | flag; el backend mira sus transiciones |
+| `humedad` | ESP32 | Web | % 0–100 de cuán óptima está la humedad de la maceta; se reporta en `POST /estado` |
 | `ultima_conexion` | Backend | Web | NO va en el contrato; el backend estampa la hora del último `POST /estado` |
 | `riego_manual` | Web (activa) / Backend (limpia) | ESP32 | comando "regar ahora"; la web lo pone en true, el backend lo limpia al detectar un `ultimo_riego` más nuevo |
 

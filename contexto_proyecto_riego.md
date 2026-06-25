@@ -53,7 +53,7 @@ El caso normal es un solo request. Solo baja config cuando de verdad cambió alg
 Detalle completo en `contratos_riego_esp32.md`.
 
 - `GET /api/config` → el ESP32 se baja `version` + array de macetas con `habilitada`, `intervalo_horas`, `cantidad_ml`, `ultimo_riego`, `riego_manual`.
-- `POST /api/estado` → el ESP32 reporta `config_version`, `hay_agua` y el `ultimo_riego` de cada maceta. Respuesta: `{ ok, version }`. El backend limpia `riego_manual` solo si el `ultimo_riego` reportado es más nuevo que el guardado (señal de que regó).
+- `POST /api/estado` → el ESP32 reporta `config_version`, `hay_agua`, y por maceta `ultimo_riego` y `humedad` (0–100). Respuesta: `{ ok, version }`. El backend limpia `riego_manual` solo si el `ultimo_riego` reportado es más nuevo que el guardado (señal de que regó).
 - `POST /api/config` → la web manda el array de macetas sin `version` ni `ultimo_riego`. El backend incrementa `version` solo.
 - `POST /api/regar` → la web pide un riego manual (`{ id }`) o lo cancela (`{ id, cancelar: true }`). Setea `riego_manual`; no toca `version`.
 

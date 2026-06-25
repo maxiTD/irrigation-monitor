@@ -216,7 +216,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": true,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}} },\n    { \"id\": 2, \"ultimo_riego\": {{now}} }\n  ]\n}"
+              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": true,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}}, \"humedad\": 72 },\n    { \"id\": 2, \"ultimo_riego\": {{now}}, \"humedad\": 45 }\n  ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/estado",
@@ -256,7 +256,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": false,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}} },\n    { \"id\": 2, \"ultimo_riego\": {{now}} }\n  ]\n}"
+              "raw": "{\n  \"config_version\": 1,\n  \"hay_agua\": false,\n  \"macetas\": [\n    { \"id\": 1, \"ultimo_riego\": {{now}}, \"humedad\": 18 },\n    { \"id\": 2, \"ultimo_riego\": {{now}}, \"humedad\": 45 }\n  ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/estado",

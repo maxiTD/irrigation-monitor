@@ -7,7 +7,7 @@ const { enviarAlertaSinAgua } = require('../services/whatsapp');
 const router = express.Router();
 
 // POST /api/estado — el ESP32 reporta (heartbeat + estado).
-// Body: { config_version, hay_agua, macetas: [{ id, ultimo_riego }, ...] }
+// Body: { config_version, hay_agua, macetas: [{ id, ultimo_riego, humedad }, ...] }
 // Respuesta: { ok, version }  -> el ESP32 compara version y baja config solo si cambió.
 router.post('/estado', (req, res) => {
   const { hay_agua, macetas } = req.body || {};
@@ -17,6 +17,13 @@ router.post('/estado', (req, res) => {
   }
   if (!Array.isArray(macetas)) {
     return res.status(400).json({ ok: false, error: 'Falta el array "macetas".' });
+  }
+
+  for (const m of macetas) {
+    if (m.humedad != null &&
+        (typeof m.humedad !== 'number' || !Number.isFinite(m.humedad) || m.humedad < 0 || m.humedad > 100)) {
+      return res.status(400).json({ ok: false, error: `humedad inválida (maceta ${m.id}): debe ser un número 0-100.` });
+    }
   }
 
   const ahora = Math.floor(Date.now() / 1000);
@@ -37,6 +44,7 @@ router.post('/estado', (req, res) => {
         }
         db.updateUltimoRiego.run(m.ultimo_riego, m.id);
       }
+      if (m.humedad != null) db.updateHumedad.run(m.humedad, m.id);
     }
     db.setEstadoSistema(hay_agua, ahora); // estampa ultima_conexion (liveness)
   });

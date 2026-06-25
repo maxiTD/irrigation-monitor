@@ -47,6 +47,35 @@ function renderEstado(data) {
   $('#refresh-seg').textContent = Math.round(REFRESH_MS / 1000);
 }
 
+function nivelHumedad(h) {
+  if (h == null) return 'na';
+  if (h < 30) return 'bad';
+  if (h < 60) return 'warn';
+  return 'ok';
+}
+
+const LABEL_HUMEDAD = {
+  bad: 'Humedad baja',
+  warn: 'Humedad regular',
+  ok: 'Humedad óptima',
+  na: 'Humedad',
+};
+
+function humedadHTML(m) {
+  const h = m.humedad;
+  const nivel = nivelHumedad(h);
+  const pct = h == null ? 0 : Math.max(0, Math.min(100, Math.round(h)));
+  return `
+    <div class="humedad" data-nivel="${nivel}">
+      <div class="humedad-top">
+        <span class="humedad-label">${LABEL_HUMEDAD[nivel]}</span>
+        <span class="humedad-val">${h == null ? 'sin dato' : pct + '%'}</span>
+      </div>
+      <div class="humedad-bar"><span style="width: ${pct}%"></span></div>
+    </div>
+  `;
+}
+
 function cardHTML(m) {
   return `
     <div class="card-head">
@@ -67,6 +96,8 @@ function cardHTML(m) {
       ${ICONS.drop}
       <span>Último riego: <b>${fmtFecha(m.ultimo_riego)}</b></span>
     </div>
+
+    ${humedadHTML(m)}
 
     <div class="fields">
       <div class="field">
